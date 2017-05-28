@@ -1,3 +1,5 @@
-/**
- * Created by marcos on 28/05/2017.
- */
+(function(){
+    angular
+        .module('airports')
+        .service()
+})();

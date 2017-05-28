@@ -1,3 +1,12 @@
-/**
- * Created by marcos on 28/05/2017.
- */
+(function () {
+    'use strict';
+    angular.module('airports')
+        .controller('DashboardController', DashboardController);
+
+    DashboardController.$inject = [];
+
+    function DashboardController() {
+        var vm = this;
+
+    }
+})();

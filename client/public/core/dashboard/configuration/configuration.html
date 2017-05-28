@@ -1,10 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<form class="col s12">
+    <div class="row">
+        <div class="input-field col s6">
+            <input  id="first_name" type="text" class="validate">
+            <label for="first_name">IP Address</label>
+        </div>
+        <div class="input-field col s6">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">PORT</label>
+        </div>
+    </div>
+    <div class="row">
+        <button ng-click="configuration.connect()" class="btn btn-success">Connect</button>
+    </div>
+</form>
