@@ -19,9 +19,24 @@
         }
     }
 
-    AirportsListController.$inject = ['$scope'];
+    AirportsListController.$inject = ['$scope', 'DashboardService'];
 
-    function AirportsListController($scope){
+    function AirportsListController($scope, DashboardService){
         var vm = this;
+        vm.airports = [];
+
+        vm.$onInit = init;
+
+        function init() {
+            DashboardService
+                .getAirports()
+                .then(function (airports) {
+                    vm.airports = airports;
+                })
+                .catch(function (err) {
+                    Materialize.toast(err.message, 4000);
+                });
+        }
+
     }
 })();

@@ -19,9 +19,23 @@
         }
     }
 
-    CarriersListController.$inject = ['$scope'];
+    CarriersListController.$inject = ['$scope', 'DashboardService'];
 
-    function CarriersListController($scope){
+    function CarriersListController($scope, DashboardService){
         var vm = this;
+        vm.carriers = [];
+
+        vm.$onInit = init;
+
+        function init(){
+            DashboardService
+                .getCarriers()
+                .then(function(carriers){
+                    vm.carriers = carriers;
+                })
+                .catch(function (err) {
+                    Materialize.toast(err.message, 4000);
+                });
+        }
     }
 })();

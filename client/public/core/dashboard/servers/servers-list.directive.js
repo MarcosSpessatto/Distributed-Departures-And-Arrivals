@@ -1,10 +1,10 @@
-(function(){
+(function () {
     'use strict';
     angular
         .module('airports')
         .directive('serversList', ServersListDirective);
 
-    function ServersListDirective(){
+    function ServersListDirective() {
         return {
             restrict: 'E',
             templateUrl: 'core/dashboard/servers/servers-list.html',
@@ -14,14 +14,32 @@
             bindToController: true
         };
 
-        function linkFunc(){
+        function linkFunc() {
 
         }
     }
 
-    ServersListController.$inject = ['$scope'];
+    ServersListController.$inject = ['$scope', 'DashboardService'];
 
-    function ServersListController($scope){
+    function ServersListController($scope, DashboardService) {
         var vm = this;
+        vm.servers = [];
+
+        vm.$onInit = init;
+
+        function init() {
+            getServers();
+        }
+
+        function getServers() {
+            DashboardService
+                .getServers()
+                .then(function (servers) {
+                    vm.servers = servers;
+                })
+                .catch(function(){
+                    Materialize.toast('Error while load list of servers', 4000);
+                });
+        }
     }
 })();

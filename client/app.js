@@ -5,8 +5,9 @@ const app = express();
 
 app.use(express.static(__dirname + '/public/'));
 
-routes(app);
+global.connection = {};
 
+routes(app);
 
 app.get('/*', (req, res) =>  {
     res.sendFile(__dirname + '/public/index.html');
@@ -15,7 +16,7 @@ app.get('/*', (req, res) =>  {
 
 //404 error
 app.use((request, response, next) => {
-    var err = new Error('Not found!');
+    const err = new Error('Not found!');
     err.status = 404;
     next(err);
 });

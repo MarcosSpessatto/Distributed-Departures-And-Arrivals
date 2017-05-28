@@ -7,6 +7,7 @@ function server(app){
 
     app
         .get('/api/server', serverController.list)
+        .post('/api/connect', serverController.connect)
 }
 
 module.exports = server;

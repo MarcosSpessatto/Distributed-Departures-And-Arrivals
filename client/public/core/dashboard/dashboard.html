@@ -1,9 +1,12 @@
+<status-bar></status-bar>
 <div class="row">
     <div class="col s12 l12 m12 center">
         <h5>Distributed American Airports Statistics System</h5>
         <configuration></configuration>
+        <query-box ng-if="dashboard.connected"></query-box>
+        <available-list ng-if="dashboard.connected"></available-list>
+        <br>
+        <br>
         <servers-list></servers-list>
-        <!--<query-box></query-box>-->
-        <!--<available-list></available-list>-->
     </div>
 </div>

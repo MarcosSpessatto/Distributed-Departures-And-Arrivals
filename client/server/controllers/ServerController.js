@@ -1,3 +1,5 @@
+import NetService from '../services/NetService'
+
 class ServerController {
 
     list(request, response, next) {
@@ -19,6 +21,15 @@ class ServerController {
         };
 
         response.json(servers)
+    }
+
+    connect(request, response, next) {
+        const body = request.body;
+
+        NetService
+            .connect(body.host, body.ip)
+            .then((connection) => response.status(200).json())
+            .catch((err) => next(err));
     }
 
 }

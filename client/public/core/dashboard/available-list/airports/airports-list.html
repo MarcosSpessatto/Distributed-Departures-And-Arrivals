@@ -4,12 +4,19 @@
     <tr>
         <th>Airport</th>
         <th>Iata</th>
+        <th>City</th>
     </tr>
     </thead>
     <tbody>
-    <tr>
-        <td>Salgado Filho</td>
-        <td>POA</td>
+    <tr ng-if="airports.airports.length > 0" ng-repeat="airport in airports.airports track by $index">
+        <td>{{airport.name}}</td>
+        <td>{{airport.iata}}</td>
+        <td>{{airport.city}}</td>
+    </tr>
+    <tr ng-if="airports.airports.length === 0">
+        <td colspan="4" class="center">
+            <strong>No airports available.</strong>
+        </td>
     </tr>
     </tbody>
 </table>
