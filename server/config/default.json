@@ -1,0 +1,7 @@
+{
+  "serverName" : "WorldSlowestServer",
+  "portListen" : 3051,
+  "memcachedServer" : "10.1.1.1",
+  "memcachedPort" : 11211,
+  "yearData" : [1999, 2000]
+}

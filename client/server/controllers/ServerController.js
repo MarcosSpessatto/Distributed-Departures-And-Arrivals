@@ -1,4 +1,4 @@
-import NetService from '../services/NetService'
+import SocketClientService from '../services/SocketClientService'
 
 class ServerController {
 
@@ -26,10 +26,16 @@ class ServerController {
     connect(request, response, next) {
         const body = request.body;
 
-        NetService
+        SocketClientService
             .connect(body.host, body.ip)
             .then((connection) => response.status(200).json())
             .catch((err) => next(err));
+    }
+    disconnect(request, response, next){
+        SocketClientService
+            .disconnect()
+            .then(() => response.status(200).json())
+            .catch((err) => next(err))
     }
 
 }
