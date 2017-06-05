@@ -1,13 +1,55 @@
 import ResponseFactory from '../helpers/ResponseFactory'
 import Messages from '../constants/ResponseMessages.json'
 import fs from 'fs'
-import io from 'socket.io-client'
+import net from 'net'
+import config from 'config'
+import stream from 'stream'
 
-class SocketService {
+class SocketServerService {
 
+    static listen() {
+        net.createServer({
+            allowHalfOpen: false
+        }, (connection) => {
 
-    static connect() {
-        
+            const Readable = stream.Readable;
+
+            let chunks = [];
+
+            let readable = new Readable();
+            readable._read = (data) => {
+
+            };
+
+            connection.on('data', (data) => {
+                let str = data.toString();
+                if (!str.includes('\n')) {
+                    readable.push(data)
+                } else {
+                    readable.push(data);
+                    readable.push(null)
+                }
+            });
+
+            readable.on('data', (chunk) => chunks.push(chunk));
+
+            readable.on('end', () => {
+                const data = Buffer.concat(chunks);
+                const stringData = data.toString('utf8').replace('\n', ' ');
+            });
+
+            connection.on('end', () => {
+            });
+
+            connection.on('close', () => {
+            });
+
+            connection.on('error', (error) => {
+
+            });
+
+        }).listen(config.get('portListen'));
+
     }
 
     //
@@ -99,4 +141,4 @@ class SocketService {
     // }
 }
 
-export default SocketService;
+export default SocketServerService;

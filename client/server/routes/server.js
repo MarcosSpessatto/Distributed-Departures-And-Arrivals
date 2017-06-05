@@ -6,8 +6,9 @@ function server(app){
 
 
     app
-        .get('/api/server', serverController.list)
         .post('/api/connect', serverController.connect)
+        .post('/api/disconnect', serverController.disconnect)
+        .get('/api/alive', serverController.isConnected);
 }
 
 module.exports = server;

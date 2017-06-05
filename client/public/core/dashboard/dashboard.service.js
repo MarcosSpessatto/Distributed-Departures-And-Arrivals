@@ -8,25 +8,11 @@
         var service = this;
 
         service.name = 'DashboardService';
-        service.getServers = getServers;
-        service.getAirports = getAirports;
-        service.getCarriers = getCarriers;
-        service.isConnected = isConnected;
         service.connect = connect;
         service.disconnect = disconnect;
-
-        function getServers() {
-            return $q(function (resolve, reject) {
-                $http
-                    .get('/api/server')
-                    .then(function (servers) {
-                        resolve(servers.data.servers);
-                    })
-                    .catch(function (err) {
-                        reject(err);
-                    })
-            });
-        }
+        service.isConnected = isConnected;
+        service.getAirports = getAirports;
+        service.getCarriers = getCarriers;
 
         function getAirports() {
             return $q(function (resolve, reject) {
@@ -42,7 +28,23 @@
         }
 
         function isConnected() {
-            return $window.localStorage.getItem('connectionEstablished');
+            return $q((resolve, reject) => {
+                if ($window.localStorage.getItem('connectionEstablished')) {
+                    $http
+                        .get('/api/alive')
+                        .then((alive) => {
+                            $rootScope.$broadcast('establishConnection', true);
+                            resolve(alive);
+                        })
+                        .catch((notAlive) => {
+                            $rootScope.$broadcast('establishConnection', false);
+                            reject(notAlive);
+                        });
+                } else {
+                    $rootScope.$broadcast('establishConnection', false);
+                    reject(false);
+                }
+            });
         }
 
         function getCarriers() {
@@ -58,17 +60,34 @@
             });
         }
 
-        function connect() {
+        function connect(server) {
             return $q(function (resolve, reject) {
-                $window.localStorage.setItem('connectionEstablished', true);
-                $rootScope.$broadcast('establishConnection', true);
-                resolve();
+                $http
+                    .post('/api/connect', server)
+                    .then(establishConnection)
+                    .then((connection) => resolve(connection))
+                    .catch((err) => reject(err));
             });
         }
 
         function disconnect() {
-            $window.localStorage.removeItem('connectionEstablished');
+            return $q((resolve, reject) => {
+                $http
+                    .post('/api/disconnect')
+                    .then(() => {
+                        $window.localStorage.removeItem('connectionEstablished');
+                        $rootScope.$broadcast('establishConnection', false);
+                        resolve();
+                    })
+                    .catch((err) => reject(err));
+            });
+        }
+
+        function establishConnection(connection) {
+            $window.localStorage.setItem('connectionEstablished', true);
             $rootScope.$broadcast('establishConnection', true);
+
+            return connection;
         }
     }
 })();

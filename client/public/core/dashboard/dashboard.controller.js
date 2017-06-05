@@ -12,18 +12,25 @@
         init();
 
         function init(){
-            verifyConnection();
             registerListeners();
+            verifyConnection();
         }
 
         function verifyConnection(){
-            vm.connected = DashboardService.isConnected();
+            DashboardService
+                .isConnected()
+                .then((alive) => {
+                    vm.connected = alive;
+                })
+                .catch(() => {
+                    vm.connected = false;
+                });
         }
 
         function registerListeners(){
-            $scope.$on('establishConnection', function(){
-                verifyConnection();
-            })
+            $scope.$on('establishConnection', function(event, connected){
+                vm.connected = connected;
+            });
         }
     }
 })();

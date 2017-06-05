@@ -23,40 +23,36 @@
 
     function ConfigurationController($scope, DashboardService) {
         var vm = this;
-        vm.connected = false;
 
-        vm.$onInit = init;
+        vm.connected = false;
+        vm.server = {};
+
+        vm.$onInit = onInit;
         vm.connect = connect;
         vm.disconnect = disconnect;
 
-        function init(){
-            verifyConnection();
+
+        function onInit(){
             registerListeners();
         }
 
         function connect() {
             DashboardService
                 .connect(vm.server)
-                .then(function(connection){
-
-                })
+                .then(DashboardService.isConnected())
                 .catch(function(err){
-                   Materialize.toast('Error ')
+                   Materialize.toast('Error ', 4000)
                 });
         }
 
         function disconnect(){
             DashboardService
-                .disconnect();
-        }
-
-        function verifyConnection(){
-            vm.connected = DashboardService.isConnected();
+                .disconnect()
         }
 
         function registerListeners(){
-            $scope.$on('establishConnection', function(){
-                verifyConnection();
+            $scope.$on('establishConnection', function(event, connected){
+                vm.connected = connected;
             })
         }
     }

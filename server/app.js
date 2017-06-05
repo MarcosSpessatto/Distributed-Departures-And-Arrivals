@@ -2,14 +2,14 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import consign from 'consign'
 import cors from 'cors'
+import SocketServerService from './services/SocketServerService'
 
 const app = express();
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
 
-app.use(express.static(__dirname + '/uploads/'));
+SocketServerService.listen();
 
 //Load all modules
 consign({verbose: false})

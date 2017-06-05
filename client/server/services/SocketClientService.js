@@ -6,6 +6,10 @@ const Readable = stream.Readable;
 
 class SocketClientService {
 
+    static init() {
+        global.connection = {};
+    }
+
     static execute(query) {
         return new Promise((resolve, reject) => {
             const connection = SocketClientService.getConnection();
@@ -13,7 +17,7 @@ class SocketClientService {
             let chunks = [];
 
             let readable = new Readable();
-            readable._read = function (data) {
+            readable._read = (data) => {
 
             };
 
@@ -44,11 +48,11 @@ class SocketClientService {
     }
 
 
-    static connect(host, port) {
+    static connect(ip, port) {
         return new Promise((resolve, reject) => {
             let client = new net.Socket();
 
-            client.connect(port, host, () => {
+            client.connect(port, ip, () => {
                 global.connection = client;
                 resolve();
             });
@@ -56,17 +60,12 @@ class SocketClientService {
             client.on('error', () => {
                 global.connection = {};
                 reject();
-            })
-        })
-    }
+            });
 
-    static disconnect() {
-        return new Promise((resolve) => {
-            if (global.connection) {
+            client.on('close', () => {
                 global.connection = {};
-            }
-            resolve();
-        });
+            });
+        })
     }
 
     static getConnection() {

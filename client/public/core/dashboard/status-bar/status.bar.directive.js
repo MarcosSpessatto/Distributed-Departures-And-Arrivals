@@ -18,26 +18,21 @@
         }
     }
 
-    StatusBarController.$inject = ['$scope', 'DashboardService'];
-    function StatusBarController($scope, DashboardService) {
+    StatusBarController.$inject = ['$scope'];
+    function StatusBarController($scope) {
         var vm = this;
         vm.connected = false;
 
         vm.$onInit = init();
 
         function init() {
-            verifyConnection();
             registerListeners();
         }
 
-        function registerListeners() {
-            $scope.$on('establishConnection', function () {
-                verifyConnection();
+        function registerListeners(){
+            $scope.$on('establishConnection', function(event, connected){
+                vm.connected = connected;
             });
-        }
-
-        function verifyConnection() {
-            vm.connected = DashboardService.isConnected();
         }
 
     }

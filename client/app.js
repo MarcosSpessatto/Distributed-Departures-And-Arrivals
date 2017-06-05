@@ -1,11 +1,14 @@
 import express from 'express'
 import routes from './server/routes'
+import bodyParser from 'body-parser'
+import SocketClientService from './server/services/SocketClientService';
+
+SocketClientService.init();
 
 const app = express();
 
+app.use(bodyParser.json());
 app.use(express.static(__dirname + '/public/'));
-
-global.connection = {};
 
 routes(app);
 

@@ -1,11 +1,11 @@
 <form class="col s12">
     <div class="row" ng-if="!configuration.connected">
         <div class="input-field col s6">
-            <input  id="first_name" type="text" class="validate">
+            <input  id="first_name" type="text" ng-model="configuration.server.ip" class="validate">
             <label for="first_name">IP Address</label>
         </div>
         <div class="input-field col s6">
-            <input id="last_name" type="text" class="validate">
+            <input id="last_name" type="text" ng-model="configuration.server.port" class="validate">
             <label for="last_name">PORT</label>
         </div>
     </div>
