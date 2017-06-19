@@ -47,7 +47,9 @@
 
         function disconnect(){
             DashboardService
-                .disconnect()
+                .disconnect();
+
+            $scope.$emit('Disconnect');
         }
 
         function registerListeners(){

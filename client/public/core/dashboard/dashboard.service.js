@@ -11,21 +11,7 @@
         service.connect = connect;
         service.disconnect = disconnect;
         service.isConnected = isConnected;
-        service.getAirports = getAirports;
-        service.getCarriers = getCarriers;
-
-        function getAirports() {
-            return $q(function (resolve, reject) {
-                $http
-                    .get('/api/airports')
-                    .then(function (airports) {
-                        resolve(airports.data.airports);
-                    })
-                    .catch(function (err) {
-                        reject(err);
-                    });
-            });
-        }
+        service.executeQuery = executeQuery;
 
         function isConnected() {
             return $q((resolve, reject) => {
@@ -44,19 +30,6 @@
                     $rootScope.$broadcast('establishConnection', false);
                     reject(false);
                 }
-            });
-        }
-
-        function getCarriers() {
-            return $q(function (resolve, reject) {
-                $http
-                    .get('/api/carriers')
-                    .then(function (carriers) {
-                        resolve(carriers.data.carriers);
-                    })
-                    .catch(function (err) {
-                        reject(err);
-                    })
             });
         }
 
@@ -88,6 +61,15 @@
             $rootScope.$broadcast('establishConnection', true);
 
             return connection;
+        }
+
+        function executeQuery(query) {
+            return $q(function (resolve, reject) {
+                $http
+                    .post('/api/execute', query)
+                    .then((resultQuery) => resolve(resultQuery.data))
+                    .catch((err) => reject(err));
+            });
         }
     }
 })();

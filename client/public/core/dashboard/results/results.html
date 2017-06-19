@@ -1,0 +1,21 @@
+<div class="row" ng-if="results.resultQuery">
+    <div class="col s12 l12 m12 center">
+        <h5>Query Results</h5>
+        <div>
+            <p><strong>After {{results.timestamp}} ms.</strong></p>
+            <p ng-bind-html="results.resultQuery"></p>
+        </div>
+    </div>
+</div>
+<div class="preloader-wrapper big active" ng-if="results.isLoading">
+    <div class="spinner-layer spinner-blue">
+        <div class="circle-clipper left">
+            <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+            <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+            <div class="circle"></div>
+        </div>
+    </div>

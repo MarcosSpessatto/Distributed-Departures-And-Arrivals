@@ -1,13 +1,10 @@
 
 class ResponseFactory {
 
-    makeresponse(code, message, data = undefined){
+    makeResponse(responseSend){
         let response = {};
-        response.codRetorno = code;
-        response.descricaoRetorno = message;
-        if(data){
-            response.conteudo = data;
-        }
+        response.errorCode = responseSend.errorCode;
+        response.errorDescription = responseSend.errorDescription;
         
         return response;
     }

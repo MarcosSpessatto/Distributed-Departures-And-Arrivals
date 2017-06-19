@@ -1,0 +1,6 @@
+{
+  "servers": "SD_ListServers",
+  "airports": "SD_Airports",
+  "carriers": "SD_Carriers",
+  "data": "SD_Data"
+}
