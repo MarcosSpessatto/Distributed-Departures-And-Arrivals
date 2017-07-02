@@ -1,7 +1,8 @@
 {
   "serverName" : "SlowServer",
+  "serverIp": "127.0.0.1",
   "portListen" : 3052,
   "memcachedServer" : "127.0.0.1",
   "memcachedPort" : 11211,
-  "yearData" : [1999, 2000]
+  "yearData" : [1993, 1994]
 }

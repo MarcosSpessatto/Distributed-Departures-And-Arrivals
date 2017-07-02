@@ -1,57 +1,70 @@
-import DatabaseHelper from '../helpers/DatabaseHelper';
+// import DatabaseHelper from '../helpers/DatabaseHelper';
 import MemcachedHelper from '../helpers/MemcachedHelper';
 import MemcachedKeys from '../constants/MemcachedKeys.json';
+import Mongo from '../db/mongo';
 import ResponseFactory from '../helpers/ResponseFactory';
 import ResponseMessages from '../constants/ResponseMessages.json';
 
 class AirportModel {
 
+    constructor() {
+        this.mongo = new Mongo().getConnection();
+    }
+
     getAirports() {
         return new Promise((resolve, reject) => {
-            const query = `MATCH (origin:Airport)<-[:FROM]-(flight:Flight)-[:TO]->(dest:Airport)
-                            WITH origin, dest AS airports
-                            RETURN DISTINCT airports;`;
+            getFromCache()
+                .then((cachedAiports) => {
+                    if (cachedAiports)
+                        resolve(cachedAiports);
+                    else {
+                        getFromDb(this.mongo)
+                            .then(resolve)
+                            .catch(reject);
+                    }
+                })
+                .catch(reject);
 
-            DatabaseHelper
-                .executeQuery(query)
-                .then(mountAirportList)
-                .then(saveIntoMemcached)
-                .then(airports => resolve(airports))
-                .catch((err) => reject(err));
         });
 
-        function mountAirportList(records) {
-            let airportList = {airports: []};
-            let airports;
+        function getFromCache() {
+            return new Promise((resolve, reject) => {
+                MemcachedHelper
+                    .getKey(MemcachedKeys.airports)
+                    .then(resolve)
+                    .catch(reject);
+            });
+        }
 
-            if (records.records.length > 0) {
-                airports = records.records
-                    .map(record => record.get('airports').properties);
-
-                airportList.airports = airports;
-            }
-
-            return airportList;
+        function getFromDb(mongo) {
+            const query = {};
+            const filter = {'_id': 0};
+            return new Promise((resolve, reject) => {
+                mongo
+                    .collection('airports')
+                    .find(query, filter, (err, result) => {
+                        saveIntoMemcached(result)
+                            .then(resolve)
+                            .catch(reject);
+                    });
+            });
         }
 
         function saveIntoMemcached(airports) {
             return new Promise((resolve, reject) => {
                 MemcachedHelper
                     .getKey(MemcachedKeys.airports)
-                    .then((cachedAirports) => mountAirportsToCache(cachedAirports, airports))
-                    .then((airportListToCache) => MemcachedHelper.setKey(MemcachedKeys.airports, airportListToCache))
-                    .then(() => resolve(airports))
-                    .catch((err) => reject(err));
+                    .then((cachedAirports) => {
+                        if (cachedAirports) {
+                            resolve(airports);
+                        } else {
+                            MemcachedHelper
+                                .setKey(MemcachedKeys.airports, airports)
+                                .then(() => resolve(airports))
+                                .catch(reject);
+                        }
+                    });
             });
-
-            function mountAirportsToCache(cachedAirports, airports) {
-                if (!cachedAirports)
-                    cachedAirports = [];
-
-                cachedAirports.push(airports);
-
-                return cachedAirports;
-            }
         }
     }
 }

@@ -35,8 +35,9 @@
         function registerListeners(){
             $scope.$on('ResultQuery', (event, data) => {
                 vm.isLoading = false;
-                vm.resultQuery = $sce.trustAsHtml(angular.toJson(data));
-                vm.timestamp = parseInt($window.performance.now() - timestamp);
+                 vm.resultQuery = $sce.trustAsHtml(angular.toJson(data));
+                 vm.timestamp = parseInt($window.performance.now() - timestamp);
+                 console.log(vm.timestamp)
             });
 
             $scope.$on('ClearResults', (event) => {

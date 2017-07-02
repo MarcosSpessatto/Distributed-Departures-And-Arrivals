@@ -1,4 +1,5 @@
-import DatabaseHelper from '../helpers/DatabaseHelper';
+// import DatabaseHelper from '../helpers/DatabaseHelper';
+import Mongo from '../db/mongo';
 import MemcachedHelper from '../helpers/MemcachedHelper';
 import MemcachedKeys from '../constants/MemcachedKeys.json';
 import ResponseFactory from '../helpers/ResponseFactory';
@@ -6,51 +7,64 @@ import ResponseMessages from '../constants/ResponseMessages.json';
 
 class AirportModel {
 
+    constructor() {
+        this.mongo = new Mongo().getConnection();
+    }
+
     getCarriers() {
         return new Promise((resolve, reject) => {
-            const query = `MATCH (flight:Flight)-[:MADE_BY]->(carrier:Carrier)
-                            RETURN DISTINCT carrier;`;
 
-            DatabaseHelper
-                .executeQuery(query)
-                .then(mountCarrierList)
-                .then(saveIntoMemcached)
-                .then(carriers => resolve(carriers))
-                .catch((err) => reject(err));
+            getFromCache()
+                .then((cachedCarriers) => {
+                    if (cachedCarriers)
+                        resolve(cachedCarriers);
+                    else {
+                        getFromDb(this.mongo)
+                            .then(resolve)
+                            .catch(reject);
+                    }
+                })
+                .catch(reject);
         });
 
-        function mountCarrierList(records) {
-            let carrierList = {carriers: []};
-            let carriers;
+        function getFromCache() {
+            return new Promise((resolve, reject) => {
+                MemcachedHelper
+                    .getKey(MemcachedKeys.carriers)
+                    .then(resolve)
+                    .catch(reject);
+            });
+        }
 
-            if (records.records.length > 0) {
-                carriers = records.records
-                    .map(record => record.get('carrier').properties);
-
-                carrierList.carriers = carriers;
-            }
-
-            return carrierList;
+        function getFromDb(mongo) {
+            const query = {};
+            const filter = {'_id': 0};
+            return new Promise((resolve, reject) => {
+                mongo
+                    .collection('carriers')
+                    .find(query, filter, (err, result) => {
+                        saveIntoMemcached(result)
+                            .then(resolve)
+                            .catch(reject);
+                    });
+            });
         }
 
         function saveIntoMemcached(carriers) {
             return new Promise((resolve, reject) => {
                 MemcachedHelper
                     .getKey(MemcachedKeys.carriers)
-                    .then((cachedCarriers) => mountCarriersToCache(cachedCarriers, carriers))
-                    .then((carrierListToCache) => MemcachedHelper.setKey(MemcachedKeys.carriers, carrierListToCache))
-                    .then(() => resolve(carriers))
-                    .catch((err) => reject(err));
+                    .then((cachedCarriers) => {
+                        if (cachedCarriers) {
+                            resolve(carriers);
+                        } else {
+                            MemcachedHelper
+                                .setKey(MemcachedKeys.carriers, carriers)
+                                .then(() => resolve(carriers))
+                                .catch(reject);
+                        }
+                    });
             });
-
-            function mountCarriersToCache(cachedCarriers, carriers) {
-                if (!cachedCarriers)
-                    cachedCarriers = [];
-
-                cachedCarriers.push(carriers);
-
-                return cachedCarriers;
-            }
         }
     }
 }

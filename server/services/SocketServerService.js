@@ -18,17 +18,19 @@ class SocketServerService {
                 chunks.push(data);
 
                 if (data.toString().includes('\n')) {
-                    const command = chunks.toString('utf-8').replace('\n', ' ').trim();
+                    let command = chunks.toString('utf-8').replace('\n', ' ').trim();
 
                     ServerController
                         .executeCommand(command)
                         .then((result) => {
                             connection.write(`${JSON.stringify(result)}\n`);
                             chunks = [];
+                            command = undefined;
                         })
                         .catch((err) => {
                             connection.write(`${JSON.stringify(err)}\n`);
                             chunks = [];
+                            command = undefined;
                         });
                 }
             });

@@ -5,6 +5,8 @@ import ServerModel from '../models/ServerModel';
 import DelayDataModel from '../models/DelayDataModel';
 import ResponseFactory from '../helpers/ResponseFactory';
 import ResponseMessages from '../constants/ResponseMessages.json';
+import SocketClientService from '../services/SocketClientService';
+import MemcachedHelper from '../helpers/MemcachedHelper';
 
 class ServerController {
 
@@ -50,14 +52,52 @@ class ServerController {
 
     static getDelayData(command) {
         return new Promise((resolve, reject) => {
-            new DelayDataModel()
-                .getDelayedData(parseCommand(command))
-                .then((delayedData) => resolve(delayedData))
-                .catch((err) => reject(err));
+            let parsedData = parseCommand(command);
+            if (config.yearData.includes(parsedData.date.Year)) {
+                new DelayDataModel()
+                    .getDelayedData(parseCommand(command))
+                    .then((delayedData) => resolve(delayedData))
+                    .catch((err) => reject(err));
+            } else {
+                new ServerModel()
+                    .getServersFromWholeSystem()
+                    .then((servers) => findServerWithCorrectData(servers, parsedData.date.Year))
+                    .then((server) => {
+                        if (!server)
+                            reject(new ResponseFactory().makeResponse(ResponseMessages.unavailableServer));
+                        if (server.active) {
+                            let splitedHost = server.location.split(':');
+
+                            SocketClientService
+                                .execute(command, splitedHost[0], splitedHost[1])
+                                .then(resolve)
+                                .catch((err) => {
+                                    MemcachedHelper
+                                        .setToFalseServerDown(server)
+                                        .then(() => {
+                                            reject(new ResponseFactory().makeResponse(ResponseMessages.unavailableServer))
+                                        })
+                                        .catch(() => {
+                                            reject(new ResponseFactory().makeResponse(ResponseMessages.unavailableServer));
+                                        })
+                                });
+                        } else {
+                            reject(new ResponseFactory().makeResponse(ResponseMessages.unavailableServer));
+                        }
+                    })
+                    .catch(reject);
+            }
+
+            function findServerWithCorrectData(servers, yearSearched) {
+                return servers
+                    .servers
+                    .filter((server) => server.yearData.includes(yearSearched))[0];
+            }
         });
 
         function parseCommand(command) {
-            const splitedCommand = command.split(' ');
+            let splitedCommand = command.split(' ');
+            splitedCommand = splitedCommand.filter((command) => command !== '');
             const minimumLenghtToSearch = 2;
             let queryObject = {};
 
@@ -95,14 +135,15 @@ class ServerController {
 
         function appendAirportToObjectQuery(queryObject, data, lengthOfDateAndAirportQuery) {
             let object = queryObject;
-            object.airport = data[lengthOfDateAndAirportQuery - 1];
+            object.Origin = data[lengthOfDateAndAirportQuery - 1];
+            object.Dest = data[lengthOfDateAndAirportQuery - 1];
 
             return object;
         }
 
         function appendCarrierToObjectQuery(queryObject, data, lengthOfDateAirportAndCarrierQuery) {
             let object = queryObject;
-            object.carrier = data[lengthOfDateAirportAndCarrierQuery - 1];
+            object.UniqueCarrier = data[lengthOfDateAirportAndCarrierQuery - 1];
 
             return object;
         }
@@ -114,13 +155,13 @@ class ServerController {
                 return null;
             }
 
-            dateObject.year = date.substr(0, 4);
+            dateObject.Year = parseInt(date.substr(0, 4));
 
             if (isYearAndMonth(date) || isFullDate(date)) {
-                dateObject.month = date.substr(4, 2);
+                dateObject.Month = date.substr(4, 2);
 
                 if (isFullDate(date))
-                    dateObject.day = date.substr(6, 2);
+                    dateObject.DayofMonth = date.substr(6, 2);
             }
 
             return dateObject;

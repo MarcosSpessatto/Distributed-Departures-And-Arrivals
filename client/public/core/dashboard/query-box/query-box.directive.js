@@ -38,6 +38,7 @@
                     .executeQuery({query: vm.query})
                     .then(communicateResultQuery)
                     .catch((err) => Materialize.toast(err.errorDescription));
+                vm.query = undefined;
             } else {
                 Materialize.toast('Verifique o comando', 4000);
             }

@@ -1,0 +1,9 @@
+{
+  "mongo": {
+    "username": "server",
+    "password": "server",
+    "server": "localhost",
+    "port": 27017,
+    "database": "distributed-arrivals-and-departures"
+  }
+}

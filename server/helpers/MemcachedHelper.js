@@ -60,17 +60,41 @@ class MemcachedHelper {
             });
 
         function mountServerList(results) {
+            let serversObject = {'servers': []};
             let serverList = [];
 
             if (results && results.servers && results.servers.length > 0)
                 serverList = results.servers.filter((item) => item.name !== config.serverName);
 
-            serverList.push(MemcachedHelper.myServer);
+            for (let server of serverList) {
+                serversObject.servers.push(server);
+            }
 
-            return serverList;
+            serversObject.servers.push(MemcachedHelper.myServer);
+
+            return serversObject;
         }
     }
 
+    static setToFalseServerDown(server) {
+        return new Promise((resolve, reject) => {
+            MemcachedHelper
+                .getKey(MemcachedKeys.servers)
+                .then((servers) => setFalseServerDown(servers, server))
+                .then((serverList) => MemcachedHelper.setKey(MemcachedKeys.servers, serverList))
+                .then(resolve)
+                .catch(reject);
+        });
+
+        function setFalseServerDown(servers, server) {
+            for (let s of servers.servers) {
+                if (s.name === server.name) {
+                    s.active = false;
+                }
+            }
+            return servers;
+        }
+    }
 
 }
 
