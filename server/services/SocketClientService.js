@@ -39,7 +39,7 @@ class SocketClientService {
             });
 
             client.setTimeout(2000, () => {
-               
+
             });
 
             client.on('error', () => {

@@ -1,9 +1,9 @@
-// import DatabaseHelper from '../helpers/DatabaseHelper';
 import MemcachedHelper from '../helpers/MemcachedHelper';
 import MemcachedKeys from '../constants/MemcachedKeys.json';
 import Mongo from '../db/mongo';
-import ResponseFactory from '../helpers/ResponseFactory';
-import ResponseMessages from '../constants/ResponseMessages.json';
+require('moment-duration-format');
+import moment from 'moment';
+
 
 class DelayDataModel {
 
@@ -23,29 +23,60 @@ class DelayDataModel {
                     else {
                         const collection = dataToSearch.date.Year.toString();
                         let queries = mountQueries(dataToSearch);
+
                         let promises = mountPromises(queries, this.mongo, collection);
+                        let allPromises = mountPromisesWithAggregate(promises, this.mongo, collection, queries);
 
                         Promise
                             .all(promises)
                             .then((response) => {
+                                let arrivalDelayedAvg;
+                                let departureDelayedAvg;
+
+                                if (Math.floor(response[4][0].avg) >= 60)
+                                    arrivalDelayedAvg = moment.duration(Math.floor(response[4][0].avg), "minutes").format("HH:mm:ss");
+                                else
+                                    arrivalDelayedAvg = `00:${moment.duration(Math.floor(response[4][0].avg), "minutes").format("HH:mm:ss")}`;
+
+                                if (Math.floor(response[5][0].avg) >= 60)
+                                    departureDelayedAvg = moment.duration(Math.floor(response[5][0].avg), "minutes").format("HH:mm:ss");
+                                else
+                                    departureDelayedAvg = `00:${moment.duration(Math.floor(response[5][0].avg), "minutes").format("HH:mm:ss")}`;
                                 const responseToSend = {
                                     "arrivalOnTimeFlights": response[0],
                                     "arrivalDelayedFlights": response[1],
-                                    "arrivalDelayedAverageTime": "00:00:12",
+                                    "arrivalDelayedAverageTime": arrivalDelayedAvg,
                                     "departureOnTimeFlights": response[2],
                                     "departureDelayedFlights": response[3],
-                                    "departureDelayedAverageTime": "00:00:12"
+                                    "departureDelayedAverageTime": departureDelayedAvg
                                 };
-
+                                resolve(responseToSend);
                                 MemcachedHelper
                                     .setKey(key, responseToSend)
-                                    .then(() => resolve(responseToSend))
-                                    .catch(reject);
+                                    .then(() => {
+                                    })
+                                    .catch(() => {
+                                    });
                             })
                             .catch((err) => reject(err))
                     }
                 });
         });
+
+        function toHHmmss(mins) {
+            let mins_num = mins;
+            let seconds = Math.floor(mins_num * 60).toFixed(2);
+            let hours = Math.floor(mins_num / 60);
+            let minutes = Math.floor((mins_num - ((hours * 3600)) / 60));
+
+            if (hours < 10) {
+                hours = "0" + hours;
+            }
+            if (minutes < 10) {
+                minutes = "0" + minutes;
+            }
+            return hours + ':' + minutes + ':' + seconds;
+        }
 
         function mountPromises(queries, mongo, collection) {
             let promises = [];
@@ -62,6 +93,41 @@ class DelayDataModel {
                     }));
             }
 
+            return promises;
+        }
+
+        function mountPromisesWithAggregate(promises, mongo, collection, queries) {
+            const arrDelayQuery = [];
+            const queryArrDelay = {'$match': queries[1]};
+            const groupArrDelay = {'$group': {_id: null, avg: {$avg: "$ArrDelay"}}};
+            arrDelayQuery.push(queryArrDelay);
+            arrDelayQuery.push(groupArrDelay);
+            promises.push(
+                new Promise((resolve, reject) => {
+                    mongo
+                        .collection(collection)
+                        .aggregate(arrDelayQuery, (err, result) => {
+                            if (err)
+                                reject(err)
+                            resolve(result);
+                        })
+                }));
+
+            const depDelayQuery = [];
+            const queryDepDelay = {'$match': queries[1]};
+            const groupDepDelay = {'$group': {_id: null, avg: {$avg: "$DepDelay"}}};
+            depDelayQuery.push(queryDepDelay);
+            depDelayQuery.push(groupDepDelay);
+            promises.push(
+                new Promise((resolve, reject) => {
+                    mongo
+                        .collection(collection)
+                        .aggregate(depDelayQuery, (err, result) => {
+                            if (err)
+                                reject(err)
+                            resolve(result);
+                        })
+                }));
             return promises;
         }
 
