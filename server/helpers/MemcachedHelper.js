@@ -16,7 +16,7 @@ class MemcachedHelper {
 
     static myServer = {
         "name": config.serverName,
-        "location": `127.0.0.1:${config.portListen}`,
+        "location": `${config.serverIp}:${config.portListen}`,
         "yearData": config.yearData,
         "active": true
     };
