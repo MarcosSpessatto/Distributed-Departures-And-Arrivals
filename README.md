@@ -1,15 +1,15 @@
 # Distributed-Departures-And-Arrivals
 
-cd client/
-npm install
-npm start // rodará na porta 3050
+cd client/  <br/>
+npm install <br/>
+npm start // rodará na porta 3050 <br/>
 
-cd server/
-npm install
-npm start //rodará na porta 3053 o HTTP e o socket na porta especifica no arquivo config.json
+cd server/ <br/>
+npm install <br/>
+npm start //rodará na porta 3053 o HTTP e o socket na porta especifica no arquivo config.json <br/>
 
 
-MONGODB
+MONGODB <br/>
 IMPORTAR OS ANOS DE 1993 E 1994 <br/>
 mongoimport --db distributed-arrivals-and-departures -c 1993 --file CAMINHO DO ARQUIVO 1993.csv --type csv
 --headerline --verbose <br/>
