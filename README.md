@@ -10,9 +10,9 @@ npm start //rodará na porta 3053 o HTTP e o socket na porta especifica no arqui
 
 
 MONGODB
-IMPORTAR OS ANOS DE 1993 E 1994
+IMPORTAR OS ANOS DE 1993 E 1994 <br/>
 mongoimport --db distributed-arrivals-and-departures -c 1993 --file CAMINHO DO ARQUIVO 1993.csv --type csv
---headerline --verbose
+--headerline --verbose <br/>
 mongoimport --db distributed-arrivals-and-departures -c 1994 --file CAMINHO DO ARQUIVO 1994.csv --type csv
 --headerline --verbose
 
