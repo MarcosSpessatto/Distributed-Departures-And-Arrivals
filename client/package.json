@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -r babel-register -r babel-polyfill bin/www.js"
+    "start": "node_modules/.bin/nodemon -r babel-register -r babel-polyfill bin/www.js"
   },
   "keywords": [],
   "author": "",
