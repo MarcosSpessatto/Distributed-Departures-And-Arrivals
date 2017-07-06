@@ -17,6 +17,8 @@ class ServerModel {
         function mountServerList(servers) {
             return {
                 years: servers
+                    .servers
+                    .filter((server) => Boolean(server.active))
                     .map(server => server.yearData)
                     .reduce((servers, server) => servers.concat(server))
             };

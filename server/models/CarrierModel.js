@@ -43,11 +43,24 @@ class AirportModel {
                 mongo
                     .collection('carriers')
                     .find(query, filter, (err, result) => {
-                        saveIntoMemcached(result)
+                        let parsedResult = parseResult(result);
+                        saveIntoMemcached(parsedResult)
                             .then(resolve)
                             .catch(reject);
                     });
             });
+        }
+
+        function parseResult(result) {
+            let parsedResult = [];
+            for (let item of result) {
+                parsedResult.push({
+                    code: item.Code,
+                    name: item.Description,
+                });
+            }
+
+            return parsedResult;
         }
 
         function saveIntoMemcached(carriers) {

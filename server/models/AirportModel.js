@@ -38,16 +38,32 @@ class AirportModel {
 
         function getFromDb(mongo) {
             const query = {};
-            const filter = {'_id': 0};
+            const filter = {'_id': 0, 'state': 0, 'country': 0};
             return new Promise((resolve, reject) => {
                 mongo
                     .collection('airports')
                     .find(query, filter, (err, result) => {
-                        saveIntoMemcached(result)
+                        let parsedResult = parseResult(result);
+                        saveIntoMemcached(parsedResult)
                             .then(resolve)
                             .catch(reject);
                     });
             });
+        }
+
+        function parseResult(result) {
+            let parsedResult = [];
+            for (let item of result) {
+                parsedResult.push({
+                    iata: item.iata,
+                    name: item.airport,
+                    city: item.city,
+                    lat: item.lat,
+                    lng: item.long
+                });
+            }
+
+            return parsedResult;
         }
 
         function saveIntoMemcached(airports) {

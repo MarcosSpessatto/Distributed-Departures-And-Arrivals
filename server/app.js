@@ -4,7 +4,7 @@ import consign from 'consign'
 import cors from 'cors'
 import SocketServerService from './services/SocketServerService'
 import MemcachedHelper from './helpers/MemcachedHelper'
-// import DatabaseHelper from './helpers/DatabaseHelper'
+import config from './config.json';
 
 const app = express();
 
@@ -32,7 +32,11 @@ app.use((request, response, next) => {
     err.status = 404;
     next(err);
 });
-
+process.on('SIGINT', () => {
+    MemcachedHelper
+        .setToFalseServerDown({name: config.serverName});
+        process.exit();
+});
 //error handling
 app.use((err, request, response, next) => {
     response.status(err.status || 500).json({err: err.message});
