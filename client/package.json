@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -r babel-register -r babel-polyfill bin/www.js"
+    "start": "node_modules/.bin/nodemon -r babel-register -r babel-polyfill bin/www.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +17,7 @@
     "babel-register": "^6.24.0",
     "body-parser": "^1.17.2",
     "express": "^4.15.2",
+    "nodemon": "^1.11.0",
     "request": "^2.81.0"
   }
 }
